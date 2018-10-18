@@ -1,0 +1,20 @@
+[general]
+name=qgis_project2kmz
+qgisMinimumVersion=2.0
+description=Build a kmz file from a QGis project layers of points, lines or polygons
+about=This plugin converts a whole QGis project of spatial data to kmz. It groups data to folders and generates the symbology as displayed in QGIS. At the moment, it only works with simple or categorized symbology.
+version=2.0
+author=Pedro Tarroso/ARGaeta/Vertical Srl
+email=ptarroso@cibio.up.pt/ar_gaeta@yahoo.it
+experimental=False
+deprecated=False
+tags=point, kmz
+icon=icon.png
+category=Vector
+changelog=
+v2.0: export whole qgis project and reproject in 4326
+v1.1: added support for polygons and lines
+v1.2: corrected unicode error
+v1.3: only export features with symbols defined or active
+v1.4: Exports polygons with correct color and sets border width (in pixels)
+v1.4.1: Points now export correctly wit icon to different applications

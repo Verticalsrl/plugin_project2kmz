@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/plugins/qgis_project2kmz" >
+        <file>qgis_project2kmz.png</file>
+    </qresource>
+</RCC>
