@@ -1,0 +1,9 @@
+Plugin QGis per esportare su file KMZ i singoli layer attivi presenti sul progetto QGis tematizzate in base ad uno stile categorizzato.
+
+Per installare il plugin:
+- scaricare l'intero progetto del plugin alla versione voluta come file zip
+- dal file zip estrarre e copiare la directory "qgis_project2kmz" sotto il percorso dei plugin di QGis (solitamente "$HOME\.qgis2\python\plugins"
+- aprire QGis e abilitare il plugin
+
+
+Compatibile con i sistemi QGis 2.x
