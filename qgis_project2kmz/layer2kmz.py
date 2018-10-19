@@ -88,14 +88,38 @@ class layer2kmz:
 
         # Declare instance attributes
         self.actions = []
-        self.menu = self.tr(u'&layer2kmz')
+        self.menu = self.tr(u'&Project2Kmz')
         # TODO: We are going to let the user set this up in a future iteration
         if self.iface.pluginToolBar():
             self.toolbar = self.iface.pluginToolBar()
         else:
-            self.toolbar = self.iface.addToolBar(u'layer2kmz')
-        self.toolbar.setObjectName(u'layer2kmz')
+            self.toolbar = self.iface.addToolBar(u'Project2Kmz')
+        self.toolbar.setObjectName(u'Project2Kmz')
+        
+        #SELEZIONA CARTELLA
+        self.dlg.dirBrowse_txt.clear()
+        self.dlg.dirBrowse_btn.clicked.connect(self.select_output_dir)
+        
+        #Disabilito tasto OK
+        self.dlg.button_box.button(QDialogButtonBox.Ok).setEnabled(False);
+        #myButtonBox->button( QDialogButtonBox::Ok )->setEnabled( false );
+        
+    #--------------------------------------------------------------------------
 
+    def activate_import(self):
+        dirname_check = self.dlg.dirBrowse_txt.text()
+        if (dirname_check):
+            self.dlg.button_box.button(QDialogButtonBox.Ok).setEnabled(True);
+        else:
+            self.dlg.button_box.button(QDialogButtonBox.Ok).setEnabled(False);
+    
+    def select_output_dir(self):
+        dirname = QFileDialog.getExistingDirectory(self.dlg, "Open output directory","", QFileDialog.ShowDirsOnly)
+        self.dlg.dirBrowse_txt.setText(dirname)
+        #Verifico di avere tutte le informazioni necessarie per decidere se abilitare o meno il pulsante IMPORT
+        self.activate_import()
+    
+    
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
         """Get the translation for a string using Qt translation API.
@@ -109,9 +133,8 @@ class layer2kmz:
         :rtype: QString
         """
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
-        return QCoreApplication.translate('layer2kmz', message)
-
-
+        return QCoreApplication.translate('Project2Kmz', message)
+    
     def add_action(
         self,
         icon_path,
@@ -199,7 +222,7 @@ class layer2kmz:
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
             self.iface.removePluginVectorMenu(
-                self.tr(u'&layer2kmz'),
+                self.tr(u'&Project2Kmz'),
                 action)
             self.iface.removeToolBarIcon(action)
         # remove the toolbar
@@ -218,10 +241,10 @@ class layer2kmz:
         #self.dlg.updateLayerCombo([lyr.name() for lyr in allLayers])
 
         # show the dialog
-        #self.dlg.show()
+        self.dlg.show()
         # Run the dialog event loop
-        #result = self.dlg.exec_()
-        result = 1 #gli faccio saltare questa parte di visualizzazione della maschera
+        result = self.dlg.exec_()
+        #result = 1 #gli faccio saltare questa parte di visualizzazione della maschera
         
         # See if OK was pressed
         if result:
@@ -230,17 +253,6 @@ class layer2kmz:
             #folderFld = self.dlg.getFolder()
             #exportFld = self.dlg.getExports()
             #outFile = self.dlg.getOutFile()
-            
-            '''
-            #IMPONGO questi valori:
-            layerName = 'ebw_location'
-            labelFld = 'NOME'
-            folderFld = 'TIPO'
-            exportFld = ['ID', 'NOME', 'TIPO', 'INDIRIZZO', 'CIVICO', 'NOTE']
-            #Utils.logMessage('Campi da esportare ' + str(exportFld) + ' - Tipo ' + str(type(exportFld)))
-            outFile = os.getenv("HOME") + '\da_qgis_project2kmz_con_reproject.kmz'
-            Utils.logMessage('Percorso di salvataggio: ' + str(outFile))
-            '''
 
             # Get the layer object from active layers
             canvas = self.iface.mapCanvas()
@@ -248,6 +260,16 @@ class layer2kmz:
             shownLayers = [x for x in canvas.layers()] #ELENCO DEI LAYER ATTIVI
             #layer = canvas.layer(shownLayers_name.index(layerName))
 
+            if not shownLayers_name:
+                Utils.logMessage("Nessun layer visibile in legenda!")
+                msg = QMessageBox()
+                msg.setText("Nessun layer attivo in legenda! Selezionare e rendere visibile almeno un layer categorizzato per l'esportazione. Nessun layer esportato")
+                msg.setIcon(QMessageBox.Warning)
+                msg.setWindowTitle("Nessun layer attivo!")
+                msg.setStandardButtons(QMessageBox.Ok)
+                retval = msg.exec_()
+                return 0
+            
             '''
             if layerName not in shownLayers_name:
                 self.dlg.warnMsg("Species table not found or active!", layerName)
@@ -279,18 +301,12 @@ class layer2kmz:
                 xform = QgsCoordinateTransform(crsSrc, crsDest)
                 self.xform = xform
                 
-                #IMPONGO questi valori:
-                #layerName = 'ebw_location'
-                layerName = singlelayer.name()
-                labelFld = 'NOME'
-                folderFld = 'TIPO'
-                exportFld = ['ID', 'NOME', 'TIPO', 'INDIRIZZO', 'CIVICO', 'NOTE']
-                
-                # provo prima a salvare il file nello stesso percorso del progetto:
-                prjfi = QFileInfo(QgsProject.instance().fileName())
-                outFile = os.getenv("HOME") + '\qgis_project2kmz_' + str(layerName) + '.kmz'
-                if (prjfi.absolutePath()):
-                    outFile = prjfi.absolutePath() + '\qgis_project2kmz_' + str(layerName) + '.kmz'
+                #Prelevo il nome del layer:
+                layerName = singlelayer.name()                
+
+                #Definisco il percorso completo del file da salvare in base alla directory impostata:
+                output_dir = self.dlg.dirBrowse_txt.text()
+                outFile = output_dir + '\project2kmz_' + str(layerName) + '.kmz'
                 Utils.logMessage('Percorso di salvataggio: ' + str(outFile))
                 
                 #Alcuni valori li posso prelevare dinamicamente dal progetto.
@@ -305,7 +321,6 @@ class layer2kmz:
             
                 # TUTTI i CAMPI del layer:
                 exportFld = [field.name() for field in singlelayer.pendingFields() ]
-                
                 
                 #return 0
                 #Per OGNI layer ATTIVO esporto un KMZ

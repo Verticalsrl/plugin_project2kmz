@@ -32,8 +32,8 @@ class layer2kmzDialog(QtGui.QDialog, FORM_CLASS):
         super(layer2kmzDialog, self).__init__(parent)
         self.setupUi(self)
         self.iface = iface
-        self.outputButton.clicked.connect(self.outFile)
-        self.layerCombo.currentIndexChanged.connect(self.updateFields)
+        #self.outputButton.clicked.connect(self.outFile)
+        #self.layerCombo.currentIndexChanged.connect(self.updateFields)
 
     def outFile(self):
         # Show the file dialog for output
